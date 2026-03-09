@@ -1,6 +1,6 @@
 // ===== Want PWA用サービスワーカー =====
 
-const CACHE_NAME = 'Want-v1.0.3';
+const CACHE_NAME = 'Want-v1.0.0';
 
 const PRECACHE_URLS = [
   './',
