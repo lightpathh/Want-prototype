@@ -1,0 +1,246 @@
+<!doctype html>
+
+<html lang="ja">
+<head>
+<!-- テーマ・言語のフラッシュ防止（DOMレンダリング前に適用が必要なためインライン維持） -->
+<script>
+  (() => {
+    try {
+      const theme = localStorage.getItem('theme_mode');
+      if (theme === 'light') {
+        document.documentElement.classList.add('light');
+      }
+    } catch(e){}
+  })();
+  (() => {
+    try {
+      const lang = localStorage.getItem('lang');
+      if (lang) document.documentElement.lang = lang === 'en' ? 'en' : 'ja';
+    } catch(e){}
+  })();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Want - 心理コスパ計算器</title>
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#7dd3fc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Want">
+<link rel="apple-touch-icon" href="icon-192.png">
+<!-- スタイルシート -->
+<link rel="stylesheet" href="style.css">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3C7WHDN753"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-3C7WHDN753');
+
+  // PWAインストール計測
+  window.addEventListener('appinstalled', () => {
+    gtag('event', 'pwa_installed', {
+      event_category: 'PWA',
+      event_label: 'Want App Installed'
+    });
+  });
+
+  // インストールプロンプト表示も計測
+  window.addEventListener('beforeinstallprompt', () => {
+    gtag('event', 'pwa_prompt_shown', {
+      event_category: 'PWA',
+      event_label: 'Install Prompt Shown'
+    });
+  });
+</script>
+</head>
+<body>
+
+<button id="settingsBtn" class="settings-btn">⚙️</button>
+<div id="settingsOverlay" class="settings-overlay">
+  <div class="settings-sheet">
+    <div class="settings-handle"></div>
+    <div class="settings-section-title" data-i18n="settings-theme">テーマ</div>
+    <div class="lang-btn-row" style="margin-bottom:20px;">
+      <button class="lang-btn" id="themeDarkBtn" data-i18n="theme-dark">🌙 ダーク</button>
+      <button class="lang-btn" id="themeLightBtn" data-i18n="theme-light">☀️ ライト</button>
+    </div>
+    <div class="settings-section-title" data-i18n="settings-lang">言語 / Language</div>
+    <div class="lang-btn-row">
+      <button class="lang-btn" id="langJaBtn" data-i18n="lang-ja">🇯🇵 日本語</button>
+      <button class="lang-btn" id="langEnBtn" data-i18n="lang-en">🇺🇸 English</button>
+    </div>
+  </div>
+</div>
+<button id="installBtn" class="btn-ghost btn-small" style="display:none; position:fixed; top:12px; right:68px; font-size:0.9rem; z-index:1000; background:var(--card); border:1px solid var(--accent); color:var(--accent);" data-i18n="install-btn">📲 インストール</button>
+<div class="wrap">
+  <header>
+    <h1 data-i18n="app-title">Want - 心理コスパ計算器</h1>
+    <p style="font-size:0.8rem; color:var(--muted); margin:4px 0 0;" data-i18n="app-subtitle">買い物などの意思決定をサポートします！</p>
+  </header>
+  <section class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <button id="shareGaugeBtn" class="btn-ghost btn-small" style="font-size:0.9rem;" data-i18n="share-btn">🔥結果をシェア</button>
+      <button id="tutorialBtn" class="btn-ghost btn-small" style="font-size:0.9rem;" data-i18n="tutorial-btn">🔰入門</button>
+    </div>
+    <label data-i18n="label-I">I : 欲しい気持ち（1〜100）</label>
+    <input id="I" type="number" min="1" max="100" step="0.1" placeholder="例: 40" data-i18n-placeholder="ph-I">
+    <label data-i18n-html="label-T">T : いつから欲しい？（今日: 1日）</label>
+    <div class="flex-row">
+      <input id="T" type="number" min="1" step="1" placeholder="例: 1" style="flex:2;" data-i18n-placeholder="ph-T">
+      <select id="Tunit" style="flex:1;">
+        <option value="day" data-i18n="tunit-day">日</option>
+        <option value="week" data-i18n="tunit-week">週</option>
+        <option value="month" data-i18n="tunit-month">月</option>
+        <option value="year" data-i18n="tunit-year">年</option>
+      </select>
+    </div>
+    <label data-i18n="label-C">C : 費用（円）</label>
+    <input id="C" type="number" min="0" step="1" placeholder="例: 5000" data-i18n-placeholder="ph-C">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label style="margin:0;" data-i18n="label-k">k : あなたの金銭感覚</label>
+      <div class="gauge-tooltip-wrap">
+        <button class="gauge-help-btn" id="kTooltipBtn" aria-label="kの説明">?</button>
+        <div class="gauge-tooltip" id="kTooltip" style="font-size:0.85rem;line-height:1.7;" data-i18n-html="k-tooltip-html">
+          <div style="font-weight:700;margin-bottom:6px;">🔰 初めての方はこちら</div>
+          <div style="color:var(--muted);margin-bottom:8px;">以下の数値を入力してみよう。<br>直感で選んでみてね！</div>
+          <div class="tooltip-section" style="font-family:monospace;">
+            お金にルーズ：<b>0.7, 0.5</b><br>
+            普通くらい　：<b>1</b><br>
+            お金にシビア：<b>2, 3</b>
+          </div>
+          <div style="color:var(--muted);font-size:0.78rem;margin-bottom:20px;">※ 数字が大きいほど「お金に厳しい」</div>
+          <hr class="tooltip-hr">
+          <div style="font-weight:700;margin-bottom:4px;">🔍 正式に測定したい方</div>
+          <div style="color:var(--muted);">下の「あなたの金銭感覚を計算」<br>にて測定できます。</div>
+        </div>
+      </div>
+    </div>
+    <input id="k" type="number" min="0.0001" step="0.0001" placeholder="例: 1（自動計算も可）" data-i18n-placeholder="ph-k">
+    <hr style="border:none; border-top:1px solid var(--muted); opacity:0.3; margin:12px 0 6px 0;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label style="display:block; font-weight:600; color:var(--accent); margin:0;" data-i18n="label-calc-section">あなたの金銭感覚を計算 ↓</label>
+      <div class="gauge-tooltip-wrap">
+        <button class="gauge-help-btn" id="calcSectionTooltipBtn" aria-label="計算方法の説明">?</button>
+        <div class="gauge-tooltip" id="calcSectionTooltip" style="font-size:0.85rem;line-height:1.8;width:190px;" data-i18n-html="calc-tooltip-html">
+          <div style="font-weight:700;margin-bottom:6px;">📏 測定方法は2つ</div>
+          <div class="tooltip-section">
+            <div>① 心理的な測定</div>
+            <div>② 予算的な測定</div>
+          </div>
+          <div style="color:var(--muted);margin-bottom:8px;">どちらかでOKです！</div>
+          <hr class="tooltip-hr">
+          <div style="color:var(--muted);font-size:0.8rem;">入力後に「算出」ボタンを<br>押すことも忘れずに 👍</div>
+        </div>
+      </div>
+    </div>
+    <label style="margin-top:4px;" data-i18n="label-C0">① 予期せぬ一目惚れ即決 許容額（円）</label>
+    <div class="flex-row">
+      <input id="C0" type="number" min="1" step="1" placeholder="例: 10000" style="flex:1;" data-i18n-placeholder="ph-C0">
+      <button id="calibrateBtn" class="btn-ghost btn-small" style="white-space:nowrap;" data-i18n="calibrate-btn">算出</button>
+    </div>
+    <label data-i18n="label-income">② 月の自由に使えるお金（円）</label>
+    <div class="flex-row" style="margin-bottom:8px;">
+      <input id="income" type="number" min="1" step="1" placeholder="例: 30000" style="flex:1;" data-i18n-placeholder="ph-income">
+      <button id="incomeBtn" class="btn-ghost btn-small" style="white-space:nowrap;" data-i18n="income-btn">算出</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button id="calcBtn" class="btn-primary" data-i18n="calc-btn">結果</button>
+      <button id="saveBtn" class="btn-ghost btn-small" data-i18n="save-btn">履歴保存</button>
+      <button id="exportBtn" class="btn-ghost btn-small" data-i18n="export-btn">CSV出力</button>
+    </div>
+  </section>
+  <section class="card">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <h2 style="margin:0;font-size:1rem;" data-i18n="result-h2">計算結果</h2>
+      <div class="gauge-tooltip-wrap">
+        <button class="gauge-help-btn" id="resultHelpBtn" aria-label="WとEの説明">?</button>
+        <div class="gauge-tooltip" id="resultTooltip" style="font-size:0.85rem;line-height:1.6;width:210px;" data-i18n-html="result-tooltip-html">
+          <div class="tooltip-section">
+            <div style="font-weight:700;margin-bottom:5px;">W — 欲しいの総量</div>
+            <div style="color:var(--muted);">「欲しい」というエネルギーの総量。</div>
+            <div style="color:var(--accent);font-size:0.78rem;margin-top:3px;">※ 大きいほど良い</div>
+          </div>
+          <div class="tooltip-section" style="margin-bottom:0;">
+            <div style="font-weight:700;margin-bottom:5px;">E — 心理的コスパ</div>
+            <div style="color:var(--muted);">W と費用の負担感がどれだけ釣り合っているか。</div>
+            <div style="color:var(--accent);font-size:0.78rem;margin-top:3px;">※ E = 1　: 均衡</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="result-line"><span data-i18n="result-W">W（欲しいの総量）</span><span id="Wout">—</span></div>
+    <div class="result-line"><span data-i18n="result-E">E （心理的コスパ）</span><span id="Eout">—</span></div>
+    <div class="result-judge"><span data-i18n="result-judge-prefix">判定 : </span><span id="judgement">—</span></div>
+  </section>
+  <section class="card">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <h2 style="margin:0; font-size:1rem;" data-i18n="gauge-h2">E 視覚ゲージ</h2>
+      <div class="gauge-tooltip-wrap">
+        <button class="gauge-help-btn" id="gaugeHelpBtn">?</button>
+        <div class="gauge-tooltip" id="gaugeTooltip" data-i18n-html="gauge-tooltip-html">
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">色の見方</div>
+          <div class="gauge-tooltip-label">
+            <div style="width:29%;background:rgba(239,68,68,0.28);color:#ef4444;">割高</div>
+            <div style="width:21%;background:rgba(245,158,11,0.28);color:#f59e0b;">保留</div>
+            <div style="width:21%;background:rgba(56,176,0,0.28);color:#38b000;">良い</div>
+            <div style="width:29%;background:rgba(59,130,246,0.28);color:#3b82f6;">推奨</div>
+          </div>
+          <div class="gauge-tooltip-axis">
+            <span style="left:0%">1/7</span>
+            <span style="left:29%">1/3</span>
+            <span style="left:50%">1</span>
+            <span style="left:71%">3</span>
+            <span style="left:100%">7</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="e-bar-container">
+      <div class="e-bar-fill" id="Ebar"></div>
+      <div class="e-bar-line"></div>
+      <div class="e-bar-value" id="EbarValue">—</div>
+    </div>
+    <div class="e-axis" id="Eaxis" style="visibility:hidden;">
+      <div style="position:absolute; left:0%; transform:translateX(0%); text-align:left;">1/7</div>
+      <div style="position:absolute; left:29%; transform:translateX(-50%);">1/3</div>
+      <div style="position:absolute; left:50%; transform:translateX(-50%);">1</div>
+      <div style="position:absolute; left:71%; transform:translateX(-50%);">3</div>
+      <div style="position:absolute; left:100%; transform:translateX(-100%); text-align:right;">7</div>
+    </div>
+  </section>
+  <section class="card">
+    <div style="display:flex;justify-content:flex-start;align-items:center; flex-wrap:wrap;">
+      <button id="sortEBtn" class="btn-ghost btn-small" style="flex:0.8; min-width:70px; margin-right:2px;" data-i18n="sort-E">E 高い順</button>
+      <button id="sortTimeBtn" class="btn-ghost btn-small" style="flex:0.8; min-width:70px;" data-i18n="sort-time">時系列</button>
+      <div style="flex:0.4;"></div>
+      <button id="clearAllBtn" class="btn-ghost btn-small" style="flex:0.9; min-width:80px;" data-i18n="clear-all">全件削除</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </section>
+  <footer>
+    <div class="formula">W = I × √T &emsp;&emsp; E = W / (k × √C)</div>
+  </footer>
+</div>
+
+<!-- 更新通知バナー -->
+<div id="updateBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(6px);
+  background:var(--card); border:1.5px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.45); z-index:99999; font-size:0.9rem; font-weight:600;
+  align-items:center; gap:12px; white-space:nowrap; opacity:0;
+  transition: opacity 0.35s ease, transform 0.35s ease;">
+  <span data-i18n="update-banner-text">新しいバージョンがあります</span>
+  <button id="updateBannerBtn"
+    style="background:var(--accent); color:#042029; border:none; padding:6px 14px;
+    border-radius:8px; font-size:0.88rem; font-weight:700; cursor:pointer; line-height:1.4;"
+    data-i18n="update-banner-btn">
+    今すぐ更新
+  </button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

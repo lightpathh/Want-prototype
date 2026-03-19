@@ -1,0 +1,120 @@
+:root{
+  --bg:#071226;--card:#07192a;--text:#e6eef8;--muted:#9fb4c7;--accent:#7dd3fc;--good:#38b000;--warn:#ffb020;--bad:#ef4444;--pill-bg:rgba(255,255,255,0.02);
+}
+:root.light{--bg:#f5f7fa;--card:#ffffff;--text:#1a1a1a;--muted:#4a5568;--accent:#0099cc;--good:#00a33a;--warn:#e6a700;--bad:#cc0000;--pill-bg:rgba(0,0,0,0.04);}
+html,body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--text);}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+h1{font-size:1.4rem;margin:0;}
+header{margin-bottom:8px;}
+.formula{font-size:0.9rem;color:var(--muted);margin-top: 10px;}
+.card{background:var(--card);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+label{font-size:0.9rem;color:var(--muted);}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text);font-size:1rem;box-sizing:border-box;}
+:root.light input,:root.light select,:root.light textarea{background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.1);}
+textarea{resize:vertical;min-height:56px;}
+button{border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;transition:background 0.3s;}
+.btn-primary{background:var(--accent);color:#042029;}
+.btn-ghost{background:transparent;border:1px solid rgba(159,180,199,0.38);color:var(--text);}
+.btn-small{padding:8px 10px;font-weight:600;border-radius:8px;}
+.btn-danger{background:var(--bad);color:white;padding:8px;border-radius:8px;}
+.result-line{padding:10px;border-radius:8px;background:var(--pill-bg);display:flex;justify-content:space-between;font-weight:700;}
+.result-judge{padding:10px;border-radius:8px;background:var(--pill-bg);font-weight:700;}
+.history-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;}
+.hist-item{display:flex;flex-direction:column;padding:10px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.07);}
+:root.light .hist-item{border:1px solid rgba(0,0,0,0.09);}
+.hist-top{display:flex;justify-content:space-between;align-items:center;}
+.hist-meta{font-size:0.85rem;color:var(--muted);}
+.hist-memo{font-weight:800;margin-top:6px;}
+footer{font-size:0.82rem;color:var(--muted);text-align:center;margin-top:10px;padding-bottom:8px;}
+.flex-row{display:flex;gap:8px;align-items:center;}
+.settings-btn{position:fixed;top:12px;right:16px;background:var(--accent);color:#fff;padding:6px 10px;border:none;border-radius:8px;font-size:0.9rem;cursor:pointer;z-index:1000;}
+.settings-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10000;align-items:flex-end;justify-content:center;}
+.settings-overlay.open{display:flex;}
+.settings-sheet{background:var(--card);color:var(--text);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 32px;box-shadow:0 -4px 32px rgba(0,0,0,0.4);}
+.settings-handle{width:40px;height:4px;background:rgba(159,180,199,0.35);border-radius:2px;margin:0 auto 20px;}
+.settings-section-title{font-size:0.8rem;color:var(--muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;}
+.lang-btn-row{display:flex;gap:10px;}
+.lang-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid rgba(159,180,199,0.3);background:transparent;color:var(--text);font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.lang-btn.active{border-color:var(--accent);background:rgba(125,211,252,0.12);color:var(--accent);}
+#clearAllBtn {width: 60px;line-height: 1.2;text-align: center;white-space: normal;}
+:root.light .btn-ghost,:root.light .btn-small {border: 1px solid rgba(0, 0, 0, 0.3) !important;}
+:root.light .btn-primary,:root.light .btn-danger {border: none !important;}
+/* ゲージ凡例ツールチップ */
+.gauge-help-btn{background:transparent;border:1.5px solid var(--muted);color:var(--muted);border-radius:50%;width:22px;height:22px;padding:0;font-size:0.75rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.2s,color 0.2s;}
+.gauge-help-btn:hover{border-color:var(--accent);color:var(--accent);}
+.gauge-tooltip-wrap{position:relative;display:inline-flex;align-items:center;}
+.gauge-tooltip{display:none;position:fixed;background:var(--card);border:1px solid var(--accent);border-radius:10px;padding:10px 12px;z-index:1000;width:260px;box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+.gauge-tooltip.open{display:block;}
+.gauge-tooltip-label{font-size:0.7rem;font-weight:700;display:flex;overflow:hidden;border-radius:6px;height:22px;}
+.gauge-tooltip-label div{display:flex;align-items:center;justify-content:center;}
+.gauge-tooltip-axis{position:relative;width:100%;height:18px;margin-top:3px;font-size:0.72rem;color:var(--muted);}
+.gauge-tooltip-axis span{position:absolute;transform:translateX(-50%);}
+.gauge-tooltip-axis span:first-child{transform:translateX(0);}
+.gauge-tooltip-axis span:last-child{transform:translateX(-100%);}
+
+.e-bar-container{position:relative;width:100%;height:28px;border-radius:14px;overflow:hidden;background:rgba(255,255,255,0.03);}
+:root.light .e-bar-container { background: rgba(0,0,0,0.04); border-radius: 14px; }
+.e-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:14px;transition:width 0.6s ease,background 0.4s ease;width:0%;}
+.e-bar-value{position:absolute;top:50%;left:8px;transform:translateY(-50%);font-weight:800;font-size:1.0rem;color:var(--text);}
+.e-bar-line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--text);opacity:0.6;transform:translateX(-50%);}
+.e-axis{position:relative;width:100%;height:20px;margin-top:4px;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);flex-wrap:wrap;}
+.e-axis div {flex: none;position: absolute;font-variant-numeric: tabular-nums;}
+.sort-active{background:var(--accent);color:#042029;border:none;}
+/* --- ステップチュートリアル用 --- */
+.tutorial-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9998; }
+.tutorial-highlight { position: relative; z-index: 9999; box-shadow: 0 0 0 4px var(--accent); border-radius: 8px; animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { box-shadow: 0 0 0 4px var(--accent); } to { box-shadow: 0 0 10px 6px var(--accent); } }
+.tutorial-bubble { position: fixed; z-index: 10000; background: var(--card); color: var(--text); border: 1px solid var(--accent); border-radius: 10px; padding: 14px; max-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.tutorial-bubble button { margin-top: 10px; padding: 6px 12px; border-radius: 8px; border: none; background: var(--accent); color: #042029; font-weight: bold; cursor: pointer; }
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -30px);
+  background: var(--bad);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 99999;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.toast.hide {
+  opacity: 0;
+  transform: translate(-50%, -30px);
+}
+.input-error {
+  border: 2px solid var(--bad) !important;
+  animation: shake 0.3s ease-in-out 1;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+/* ツールチップ内 背景ブロック・区切り線 */
+.tooltip-section {
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+:root.light .tooltip-section {
+  background: rgba(0,0,0,0.06);
+}
+.tooltip-hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin: 8px 0;
+}
+:root.light .tooltip-hr {
+  border-top: 1px solid rgba(0,0,0,0.15);
+}
