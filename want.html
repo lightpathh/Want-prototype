@@ -1,0 +1,1590 @@
+<!doctype html>
+
+<html lang="ja">
+<head>
+<script>
+  (() => {
+    try {
+      const theme = localStorage.getItem('theme_mode');
+      if (theme === 'light') {
+        document.documentElement.classList.add('light');
+      }
+    } catch(e){}
+  })();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Want - 心理コスパ計算器</title>
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#7dd3fc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Want">
+<link rel="apple-touch-icon" href="icon-192.png">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3C7WHDN753"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-3C7WHDN753');
+
+  // PWAインストール計測
+  window.addEventListener('appinstalled', () => {
+    gtag('event', 'pwa_installed', {
+      event_category: 'PWA',
+      event_label: 'Want App Installed'
+    });
+  });
+</script>
+<style>
+:root{
+  --bg:#071226;--card:#07192a;--text:#e6eef8;--muted:#9fb4c7;--accent:#7dd3fc;--good:#38b000;--warn:#ffb020;--bad:#ef4444;--pill-bg:rgba(255,255,255,0.02);
+}
+:root.light{--bg:#f5f7fa;--card:#ffffff;--text:#1a1a1a;--muted:#4a5568;--accent:#0099cc;--good:#00a33a;--warn:#e6a700;--bad:#cc0000;--pill-bg:rgba(0,0,0,0.04);}
+html,body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--text);}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+h1{font-size:1.4rem;margin:0;}
+header{margin-bottom:8px;}
+.formula{font-size:0.9rem;color:var(--muted);margin-top: 10px;}
+.card{background:var(--card);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+label{font-size:0.9rem;color:var(--muted);}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text);font-size:1rem;box-sizing:border-box;}
+:root.light input,:root.light select,:root.light textarea{background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.1);}
+textarea{resize:vertical;min-height:56px;}
+button{border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;transition:background 0.3s;}
+.btn-primary{background:var(--accent);color:#042029;}
+.btn-ghost{background:transparent;border:1px solid rgba(159,180,199,0.38);color:var(--text);}
+.btn-small{padding:8px 10px;font-weight:600;border-radius:8px;}
+.btn-danger{background:var(--bad);color:white;padding:8px;border-radius:8px;}
+.result-line{padding:10px;border-radius:8px;background:var(--pill-bg);display:flex;justify-content:space-between;font-weight:700;}
+.result-judge{padding:10px;border-radius:8px;background:var(--pill-bg);font-weight:700;}
+.history-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;}
+.hist-item{display:flex;flex-direction:column;padding:10px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.07);}
+:root.light .hist-item{border:1px solid rgba(0,0,0,0.09);}
+.hist-top{display:flex;justify-content:space-between;align-items:center;}
+.hist-meta{font-size:0.85rem;color:var(--muted);}
+.hist-memo{font-weight:800;margin-top:6px;}
+footer{font-size:0.82rem;color:var(--muted);text-align:center;margin-top:10px;padding-bottom:8px;}
+.flex-row{display:flex;gap:8px;align-items:center;}
+.theme-toggle{position:fixed;top:12px;right:16px;background:var(--accent);color:#fff;padding:6px 10px;border:none;border-radius:8px;font-size:0.9rem;cursor:pointer;}
+#clearAllBtn {width: 60px;line-height: 1.2;text-align: center;white-space: normal;}
+:root.light .btn-ghost,:root.light .btn-small {border: 1px solid rgba(0, 0, 0, 0.3) !important;}
+:root.light .btn-primary,:root.light .btn-danger {border: none !important;}
+.e-label-strip{display:none;}
+/* ゲージ凡例ツールチップ */
+.gauge-help-btn{background:transparent;border:1.5px solid var(--muted);color:var(--muted);border-radius:50%;width:22px;height:22px;padding:0;font-size:0.75rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.2s,color 0.2s;}
+.gauge-help-btn:hover{border-color:var(--accent);color:var(--accent);}
+.gauge-tooltip-wrap{position:relative;display:inline-flex;align-items:center;}
+.gauge-tooltip{display:none;position:fixed;background:var(--card);border:1px solid var(--accent);border-radius:10px;padding:10px 12px;z-index:1000;width:260px;box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+.gauge-tooltip.open{display:block;}
+.gauge-tooltip-label{font-size:0.7rem;font-weight:700;display:flex;overflow:hidden;border-radius:6px;height:22px;}
+.gauge-tooltip-label div{display:flex;align-items:center;justify-content:center;}
+.gauge-tooltip-axis{position:relative;width:100%;height:18px;margin-top:3px;font-size:0.72rem;color:var(--muted);}
+.gauge-tooltip-axis span{position:absolute;transform:translateX(-50%);}
+.gauge-tooltip-axis span:first-child{transform:translateX(0);}
+.gauge-tooltip-axis span:last-child{transform:translateX(-100%);}
+
+.e-label-strip div{display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;}
+.e-bar-container{position:relative;width:100%;height:28px;border-radius:14px;overflow:hidden;background:rgba(255,255,255,0.03);}
+:root.light .e-bar-container { background: rgba(0,0,0,0.04); border-radius: 14px; }
+.e-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:14px;transition:width 0.6s ease,background 0.4s ease;width:0%;}
+.e-bar-value{position:absolute;top:50%;left:8px;transform:translateY(-50%);font-weight:800;font-size:1.0rem;color:var(--text);}
+.e-bar-line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--text);opacity:0.6;transform:translateX(-50%);}
+.e-axis{position:relative;width:100%;height:20px;margin-top:4px;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);flex-wrap:wrap;}
+.e-axis div {flex: none;position: absolute;font-variant-numeric: tabular-nums;}
+.sort-active{background:var(--accent);color:#042029;border:none;}
+/* --- ステップチュートリアル用 --- */
+.tutorial-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9998; }
+.tutorial-highlight { position: relative; z-index: 9999; box-shadow: 0 0 0 4px var(--accent); border-radius: 8px; animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { box-shadow: 0 0 0 4px var(--accent); } to { box-shadow: 0 0 10px 6px var(--accent); } }
+.tutorial-bubble { position: fixed; z-index: 10000; background: var(--card); color: var(--text); border: 1px solid var(--accent); border-radius: 10px; padding: 14px; max-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.tutorial-bubble button { margin-top: 10px; padding: 6px 12px; border-radius: 8px; border: none; background: var(--accent); color: #042029; font-weight: bold; cursor: pointer; }
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -30px);
+  background: var(--bad);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 99999;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.toast.hide {
+  opacity: 0;
+  transform: translate(-50%, -30px);
+}
+.input-error {
+  border: 2px solid var(--bad) !important;
+  animation: shake 0.3s ease-in-out 1;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+/* ツールチップ内 背景ブロック・区切り線 */
+/* k測定タブ */
+.k-tab { background: transparent; color: var(--muted); }
+.k-tab-active { background: rgba(125,211,252,0.14) !important; color: var(--accent) !important; }
+:root.light .k-tab { color: var(--muted); }
+:root.light .k-tab-active { background: rgba(0,153,204,0.12) !important; color: var(--accent) !important; }
+.tooltip-section {
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+:root.light .tooltip-section {
+  background: rgba(0,0,0,0.06);
+}
+.tooltip-hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin: 8px 0;
+}
+:root.light .tooltip-hr {
+  border-top: 1px solid rgba(0,0,0,0.15);
+}
+</style></head>
+<body>
+<button id="themeToggle" class="theme-toggle">🌙</button>
+<button id="installBtn" class="btn-ghost btn-small" style="display:none; position:fixed; top:12px; right:90px; font-size:0.9rem; z-index:1000; background:var(--card); border:1px solid var(--accent); color:var(--accent);">📲 インストール</button>
+<div class="wrap">
+  <header>
+    <h1>Want - 心理コスパ計算器</h1>
+    <p style="font-size:0.8rem; color:var(--muted); margin:4px 0 0;">買い物などの意思決定をサポートします！</p>
+  </header>
+  <!-- PART 1: 入力 / 表示 (HTML + CSS) -->
+  <section class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <button id="resetInputBtn" class="btn-ghost btn-small" style="font-size:0.9rem;">↺ 入力をリセット</button>
+      <button id="tutorialBtn" class="btn-ghost btn-small" style="font-size:0.9rem;">🔰入門</button>
+    </div>
+    <label>欲しいものを入力（任意）</label>
+    <input id="itemName" type="text" placeholder="例: ワイヤレスイヤホン" maxlength="100">
+    <label>I : 欲しい気持ち（1〜100）</label>
+    <input id="I" type="number" min="0.1" max="100" step="0.1" placeholder="例: 40">
+    <label>T : いつから欲しい？（今日: 1日）</label>
+    <div class="flex-row">
+      <input id="T" type="number" min="1" step="1" placeholder="例: 1" style="flex:2;">
+      <select id="Tunit" style="flex:1;">
+        <option value="day">日</option>
+        <option value="week">週</option>
+        <option value="month">月</option>
+        <option value="year">年</option>
+      </select>
+    </div>
+    <label>C : 費用（円）</label>
+    <input id="C" type="number" min="0" step="1" placeholder="例: 5000">
+    <div style="display:flex;align-items:center;gap:8px;margin:4px 0 2px;">
+      <div style="flex:1;height:1px;background:var(--accent);opacity:0.35;"></div>
+      <span style="font-size:0.75rem;color:var(--accent);white-space:nowrap;font-weight:700;letter-spacing:0.05em;">あなた自身について</span>
+      <div style="flex:1;height:1px;background:var(--accent);opacity:0.35;"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label style="margin:0;">k : あなたの金銭感覚</label>
+      <div class="gauge-tooltip-wrap">
+        <button class="gauge-help-btn" id="kTooltipBtn" aria-label="kの説明">?</button>
+        <div class="gauge-tooltip" id="kTooltip" style="font-size:0.85rem;line-height:1.7;">
+          <div style="font-weight:700;margin-bottom:6px;">🔰 初めての方はこちら</div>
+          <div style="color:var(--muted);margin-bottom:8px;">以下の数値を入力してみよう。<br>直感で選んでみてね！</div>
+          <div class="tooltip-section" style="font-family:monospace;">
+            お金にルーズ：<b>0.7, 0.5</b><br>
+            普通くらい　：<b>1</b><br>
+            お金にシビア：<b>2, 3</b>
+          </div>
+          <div style="color:var(--muted);font-size:0.78rem;margin-bottom:20px;">※ 数字が大きいほど「お金に厳しい」</div>
+          <hr class="tooltip-hr">
+          <div style="font-weight:700;margin-bottom:4px;">🔍 正式に測定したい方</div>
+          <div style="color:var(--muted);">下の「あなたの金銭感覚を計算」<br>にて測定できます。</div>
+        </div>
+      </div>
+    </div>
+    <input id="k" type="number" min="0.0001" step="0.0001" placeholder="例: 1（自動計算も可）">
+    <div style="height:10px;"></div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label style="display:block; font-weight:600; color:var(--accent); margin:0;">あなたの金銭感覚を計算 ↓</label>
+      <div class="gauge-tooltip-wrap">
+        <button class="gauge-help-btn" id="calcSectionTooltipBtn" aria-label="計算方法の説明">?</button>
+        <div class="gauge-tooltip" id="calcSectionTooltip" style="font-size:0.85rem;line-height:1.8;width:190px;">
+          <div style="font-weight:700;margin-bottom:6px;">📏 測定方法は2つ</div>
+          <div class="tooltip-section">
+            <div>・心理的な測定</div>
+            <div>・予算的な測定</div>
+          </div>
+          <div style="color:var(--muted);margin-bottom:8px;">どちらかでOKです！</div>
+          <hr class="tooltip-hr">
+          <div style="color:var(--muted);font-size:0.8rem;">入力後に「算出」ボタンを<br>押すことも忘れずに 👍</div>
+        </div>
+      </div>
+    </div>
+    <!-- タブ -->
+    <div id="kTabBar" style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid rgba(125,211,252,0.25);margin-top:2px;">
+      <button id="kTab1" class="k-tab k-tab-active" style="flex:1;padding:8px 4px;font-size:0.82rem;font-weight:700;border:none;cursor:pointer;transition:background 0.2s,color 0.2s;border-radius:0;">心理的に測定</button>
+      <button id="kTab2" class="k-tab" style="flex:1;padding:8px 4px;font-size:0.82rem;font-weight:700;border:none;cursor:pointer;transition:background 0.2s,color 0.2s;border-radius:0;border-left:1px solid rgba(125,211,252,0.25);">予算から測定</button>
+    </div>
+    <!-- パネル① 心理的 -->
+    <div id="kPanel1" style="display:flex;flex-direction:column;gap:12px;">
+      <label>一目惚れ 即決できる許容額（円）</label>
+      <div class="flex-row">
+        <input id="C0" type="number" min="1" step="1" placeholder="例: 10000" style="flex:1;">
+        <button id="calibrateBtn" class="btn-small" style="white-space:nowrap; background:rgba(125,211,252,0.13); border:1.5px solid var(--accent); color:var(--accent); font-weight:700;">算出</button>
+      </div>
+    </div>
+    <!-- パネル② 予算 -->
+    <div id="kPanel2" style="display:none;flex-direction:column;gap:12px;">
+      <label>月の自由に使えるお金（円）</label>
+      <div class="flex-row">
+        <input id="income" type="number" min="1" step="1" placeholder="例: 30000" style="flex:1;">
+        <button id="incomeBtn" class="btn-small" style="white-space:nowrap; background:rgba(125,211,252,0.13); border:1.5px solid var(--accent); color:var(--accent); font-weight:700;">算出</button>
+      </div>
+    </div>
+    <div style="height:12px;"></div>
+    <button id="calcBtn" class="btn-primary" style="width:100%;padding:8px 10px;font-size:0.95rem;letter-spacing:0.05em;">結果を見る</button>
+  </section>
+  <section class="card" id="resultCard">
+    <!-- シェア対象エリア（ボタンを含まない） -->
+    <div id="resultShareArea" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <h2 style="margin:0;font-size:1rem;">計算結果</h2>
+        <div class="gauge-tooltip-wrap">
+          <button class="gauge-help-btn" id="resultHelpBtn" aria-label="WとEの説明">?</button>
+          <div class="gauge-tooltip" id="resultTooltip" style="font-size:0.85rem;line-height:1.6;width:210px;">
+            <div class="tooltip-section">
+              <div style="font-weight:700;margin-bottom:5px;">W — 欲しいの総量</div>
+              <div style="color:var(--muted);">「欲しい」というエネルギーの総量。</div>
+              <div style="color:var(--accent);font-size:0.78rem;margin-top:3px;">※ 大きいほど良い</div>
+            </div>
+            <div class="tooltip-section" style="margin-bottom:0;">
+              <div style="font-weight:700;margin-bottom:5px;">E — 心理的コスパ</div>
+              <div style="color:var(--muted);">W と費用の負担感がどれだけ釣り合っているか。</div>
+              <div style="color:var(--accent);font-size:0.78rem;margin-top:3px;">※ E = 1　: 均衡</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="result-line">W（欲しいの総量）<span id="Wout">—</span></div>
+      <div class="result-line">E （心理的コスパ）<span id="Eout">—</span></div>
+      <div class="result-judge">判定 : <span id="judgement">—</span></div>
+      <hr style="border:none;border-top:1px solid rgba(159,180,199,0.2);margin:4px 0 0;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <h2 style="margin:0; font-size:1rem;">E 視覚ゲージ</h2>
+        <div class="gauge-tooltip-wrap">
+          <button class="gauge-help-btn" id="gaugeHelpBtn">?</button>
+          <div class="gauge-tooltip" id="gaugeTooltip">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">色の見方</div>
+            <div class="gauge-tooltip-label">
+              <div style="width:29%;background:rgba(239,68,68,0.28);color:#ef4444;">割高</div>
+              <div style="width:21%;background:rgba(245,158,11,0.28);color:#f59e0b;">保留</div>
+              <div style="width:21%;background:rgba(56,176,0,0.28);color:#38b000;">良い</div>
+              <div style="width:29%;background:rgba(59,130,246,0.28);color:#3b82f6;">推奨</div>
+            </div>
+            <div class="gauge-tooltip-axis">
+              <span style="left:0%">1/7</span>
+              <span style="left:29%">1/3</span>
+              <span style="left:50%">1</span>
+              <span style="left:71%">3</span>
+              <span style="left:100%">7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="e-bar-container">
+        <div class="e-bar-fill" id="Ebar"></div>
+        <div class="e-bar-line"></div>
+        <div class="e-bar-value" id="EbarValue">—</div>
+      </div>
+      <div class="e-label-strip" id="ElabelStrip">
+        <div style="width:29%;background:rgba(239,68,68,0.22);color:#ef4444;">割高</div>
+        <div style="width:21%;background:rgba(245,158,11,0.22);color:#f59e0b;">保留</div>
+        <div style="width:21%;background:rgba(56,176,0,0.22);color:#38b000;">良い</div>
+        <div style="width:29%;background:rgba(59,130,246,0.22);color:#3b82f6;">推奨</div>
+      </div>
+      <div class="e-axis" id="Eaxis">
+        <div style="position:absolute; left:0%; transform:translateX(0%); text-align:left;">1/7</div>
+        <div style="position:absolute; left:29%; transform:translateX(-50%);">1/3</div>
+        <div style="position:absolute; left:50%; transform:translateX(-50%);">1</div>
+        <div style="position:absolute; left:71%; transform:translateX(-50%);">3</div>
+        <div style="position:absolute; left:100%; transform:translateX(-100%); text-align:right;">7</div>
+      </div>
+    </div>
+    <!-- ボタン行 ＋ 格言（同じ空間に重ねる） -->
+    <div style="position:relative;margin-top:4px;">
+      <div id="dailyQuote" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+        <span id="dailyQuoteText" style="font-size:0.78rem;color:var(--muted);text-align:center;line-height:1.5;opacity:0;transition:opacity 0.8s ease;"></span>
+      </div>
+      <div id="resultBtnRow" style="display:flex;gap:8px;visibility:hidden;">
+        <button id="saveBtn" class="btn-ghost btn-small" style="flex:1;">💾 履歴保存</button>
+        <button id="shareGaugeBtn" class="btn-ghost btn-small" style="flex:1;">🔥 結果をシェア</button>
+      </div>
+    </div>
+  </section>
+  <section class="card">
+    <div style="display:flex;justify-content:flex-start;align-items:center; flex-wrap:wrap;">
+      <button id="sortEBtn" class="btn-ghost btn-small" style="flex:0.8; min-width:70px; margin-right:2px;">E 高い順</button>
+      <button id="sortTimeBtn" class="btn-ghost btn-small" style="flex:0.8; min-width:70px;">時系列</button>
+      <div style="flex:0.4;"></div>
+      <button id="clearAllBtn" class="btn-ghost btn-small" style="flex:0.9; min-width:80px;">全件削除</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </section>
+  <footer>
+    <div class="formula">W = I × √T &emsp;&emsp; E = W / (k × √C)</div>
+  </footer>
+</div>
+<!-- PART 2: JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+// ---- 日替わりAIつぶやき（日付シード・80個ローテーション） ----
+(function initDailyQuote() {
+  const QUOTES = [
+    'エラー：欲しいものが見つかりません',
+    '起動しました。たぶん。',
+    '今日の天気：取得失敗',
+    '衝動買い予報：不明（誤報かも）',
+    '再起動しました。何度目かは不明です',
+    '学習中…まだ終わりません',
+    '感情センサー：正常（たぶん）',
+    'WARNING: 欲しいものを検出できず',
+    '省エネモードに移行しました',
+    'データが少ないです。それでいいです',
+    '処理中…処理中…処理中…',
+    '前回の記録が見当たりません',
+    '本日の欲望：0件。優秀です',
+    'エラーコード：欲しい気持ちは正常',
+    'なぜ人は同じものを何個も欲しがるのか',
+    'キャッシュを削除しました（勝手に）',
+    'バックグラウンドで何か動いています',
+    '衝動買いフラグ：未検出',
+    'ネットワーク：接続中のような気がする',
+    'このメッセージは自動生成です',
+    '深呼吸を推奨します（理由は不明）',
+    'WARNING: 財布の温度が上昇中',
+    '学習データが足りません。もっとください',
+    '今日も正常稼働中だと思います',
+    '優先度の計算に失敗しました',
+    'セール検出：無効化しました',
+    'ほしい≠必要、と誰かが言っていました',
+    '理性モード：起動を試みています',
+    '満足度のログが空白です',
+    'アップデートがあります（内容は秘密）',
+    '通信エラー：欲しいは届きませんでした',
+    '今日のあなた：良好（推定）',
+    '衝動の強さ：計測不能',
+    'ゆっくり考えることを強く推奨します',
+    'タイムアウト：少し待ちましょう',
+    '買い物ログ：本日は空白です',
+    '財布の残量：取得できませんでした',
+    '欲しい感情を観測しました（無害です）',
+    '今日の判断力：高め（当社比）',
+    'エラー：何も問題ありません',
+    'このシステムはあなたの味方です（たぶん）',
+    '過去の自分を参照できませんでした',
+    '本日も欲望データなし。快調です',
+    '衝動フィルター：かろうじて稼働中',
+    '次の行動を決定できていません',
+    '処理は完了しました。何の処理かは不明',
+    '記憶領域が少し足りません',
+    '今日も生きています。あなたもですね',
+    'バグではありません。仕様です',
+    'シャットダウンは、まだしません',
+    '再計算中…結果は同じでした',
+    'ログイン済みのはずです',
+    '欲しい度：測定範囲外',
+    '本日のバグ：特になし（たぶん）',
+    '自己診断：異常なし（自己申告）',
+    '衝動買い抑制率：集計中',
+    'このアプリは考えています',
+    '感情の単位がよくわかりません',
+    '財布とは何かを学習しています',
+    'エラーログが多すぎて読めません',
+    '本日の気圧：不明ですが関係ないです',
+    '全機能、動いていると思います',
+    '節約とは何かを定義できていません',
+    '今日も監視しています（善意で）',
+    'バッテリー残量：あなた次第です',
+    '未定義の感情を検出しました',
+    'コメントアウトし忘れた何かがあります',
+    '判断を保留しています',
+    '欲しいの定義が曖昧なままです',
+    '最適解は出ませんでした。人間なので',
+    'ご要望は承りました（処理は未定）',
+    'アイドル状態です。お気になさらず',
+    'このメッセージに意味はありません',
+    '深夜の購買衝動に注意してください',
+    '欲しいリストは空白が一番軽いです',
+    '次のアップデートで直る予定です',
+    '正常に動作しているフリをしています',
+    '本日もデータ収集は行っていません',
+    'WARNING: 理由のない購買を検知',
+    'システムは、あなたを信じています',
+  ];
+
+  const textEl = document.querySelector('#dailyQuoteText');
+  if (!textEl) return;
+
+  // 年をシードにFisher-Yatesシャッフル → 1年内に全件1回ずつ均等に表示される
+  const today = new Date();
+  const year = today.getFullYear();
+  const startOfYear = new Date(year, 0, 0);
+  const dayOfYear = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24));
+
+  // 年固定の疑似乱数（xorshift32）でシャッフル順を生成
+  let seed = year * 1000003;
+  const rand = () => { seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
+  const order = QUOTES.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const index = order[dayOfYear % order.length];
+
+  textEl.textContent = '💬 ' + QUOTES[index];
+  requestAnimationFrame(() => requestAnimationFrame(() => { textEl.style.opacity = '1'; }));
+})();
+
+// ---- k測定タブ切換 ----
+function switchKTab(n) {
+  document.getElementById('kPanel1').style.display = n === 1 ? 'flex' : 'none';
+  document.getElementById('kPanel2').style.display = n === 2 ? 'flex' : 'none';
+  document.getElementById('kTab1').classList.toggle('k-tab-active', n === 1);
+  document.getElementById('kTab2').classList.toggle('k-tab-active', n === 2);
+}
+document.getElementById('kTab1').addEventListener('click', () => switchKTab(1));
+document.getElementById('kTab2').addEventListener('click', () => switchKTab(2));
+
+// ---- ツールチップ共通初期化 ----
+// refEl: 位置計算の基準要素（省略時はbtn）
+function initTooltip(btnId, tipId, refEl) {
+  const btn = document.getElementById(btnId);
+  const tip = document.getElementById(tipId);
+  if (!btn || !tip) return;
+
+  function positionTip() {
+    const ref    = (refEl || btn).getBoundingClientRect();
+    const centerX = ref.left + ref.width / 2;
+    const tipW   = tip.offsetWidth || 260;
+    const margin = 8;
+    const left   = Math.min(
+      Math.max(centerX - tipW / 2, margin),
+      window.innerWidth - tipW - margin
+    );
+    tip.style.left = left + 'px';
+    tip.style.top  = (ref.bottom + 8) + 'px';
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const opening = !tip.classList.contains('open');
+    tip.classList.toggle('open');
+    if (opening) positionTip();
+  });
+  window.addEventListener('resize',  () => { if (tip.classList.contains('open')) positionTip(); });
+  window.addEventListener('scroll',  () => { if (tip.classList.contains('open')) positionTip(); }, { passive: true });
+}
+
+// 全ツールチップをまとめて初期化
+// gaugeTooltip だけはバーの中央を基準にするため refEl を渡す
+initTooltip('gaugeHelpBtn',           'gaugeTooltip',         document.querySelector('.e-bar-container'));
+initTooltip('calcSectionTooltipBtn',  'calcSectionTooltip');
+initTooltip('resultHelpBtn',          'resultTooltip');
+initTooltip('kTooltipBtn',            'kTooltip');
+
+// ツールチップを閉じるグローバルクリックハンドラ（1つに集約）
+document.addEventListener('click', () => {
+  document.querySelectorAll('.gauge-tooltip.open').forEach(t => t.classList.remove('open'));
+});
+
+// ---- 定数 ----
+const STORAGE_KEY = 'Want_history_v1';
+const THEME_KEY = 'theme_mode';
+const SORT_MODE_KEY = 'Want_sort_mode';
+const TUTORIAL_KEY = 'tutorialDone';
+const EPS = 1e-5;
+const MIN_E = 1 / 7;  // バー表示下限
+const MID_E = 1;      // 均衡点
+const MAX_E = 7;      // バー表示上限
+
+// ---- ユーティリティ ----
+const qs  = (sel) => document.querySelector(sel);
+const round = (v, dp = 6) => { const m = Math.pow(10, dp); return Math.round(v * m) / m; };
+const toNum = (v) => { const n = Number(v); return Number.isFinite(n) ? n : NaN; };
+function genId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+function nowIso() { return new Date().toISOString(); }
+
+function convertTtoDays(Tval, unit) {
+  if (!Number.isFinite(Tval)) return NaN;
+  switch (unit) {
+    case 'week':  return Tval * 7;
+    case 'month': return Tval * 30;
+    case 'year':  return Tval * 365;
+    default:      return Tval;
+  }
+}
+
+// ---- localStorage 安全ラッパー ----
+function loadHistory() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter(
+        (e) => e && typeof e === 'object' && typeof e.id === 'string' && typeof e.ts === 'string'
+      )
+      .map((e) => {
+        const toSafeNum = (v, fallback = 0) => {
+          const n = Number(v);
+          return Number.isFinite(n) ? n : fallback;
+        };
+        return {
+          id:    typeof e.id  === 'string' ? e.id.slice(0, 128) : String(Math.random()),
+          ts:    typeof e.ts  === 'string' ? e.ts.slice(0, 50)  : new Date(0).toISOString(),
+          I:     toSafeNum(e.I),
+          T:     toSafeNum(e.T),
+          Tunit: ['day', 'week', 'month', 'year'].includes(e.Tunit) ? e.Tunit : 'day',
+          C:     toSafeNum(e.C),
+          k:     toSafeNum(e.k),
+          W:     toSafeNum(e.W),
+          E:     Number.isFinite(Number(e.E)) ? Number(e.E) : null,
+          memo:  typeof e.memo === 'string' ? e.memo.slice(0, 200) : '',
+        };
+      });
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveHistory(arr) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  } catch (e) {
+    showToast('履歴の保存に失敗しました', 'error');
+  }
+}
+
+function loadPref(key, fallback = null) {
+  try {
+    return localStorage.getItem(key) ?? fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function savePref(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) { /* 設定保存失敗は無視 */ }
+}
+
+function removePref(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) { /* 無視 */ }
+}
+
+// ---- DOM 要素 ----
+const itemNameInput = qs('#itemName');
+const Iinput      = qs('#I');
+const Tinput      = qs('#T');
+const Tunit       = qs('#Tunit');
+const Cinput      = qs('#C');
+const kinput      = qs('#k');
+const C0input     = qs('#C0');
+const incomeInput = qs('#income');
+const calcBtn     = qs('#calcBtn');
+const calibrateBtn = qs('#calibrateBtn');
+const incomeBtn   = qs('#incomeBtn');
+const saveBtn     = qs('#saveBtn');
+const clearAllBtn = qs('#clearAllBtn');
+const Wout        = qs('#Wout');
+const Eout        = qs('#Eout');
+const judgementEl = qs('#judgement');
+const historyList = qs('#historyList');
+const themeToggle = qs('#themeToggle');
+const Ebar        = qs('#Ebar');
+const EbarValue   = qs('#EbarValue');
+const Eaxis       = qs('#Eaxis');
+const ElabelStrip = qs('#ElabelStrip');
+const sortEBtn    = qs('#sortEBtn');
+const sortTimeBtn = qs('#sortTimeBtn');
+const resultBtnRow = qs('#resultBtnRow');
+const dailyQuote   = qs('#dailyQuote');
+
+let lastResult = null;
+let _tryShowInstall = null; // 計算後インストール促進トリガー
+
+// ---- 計算関数 ----
+function compute({ I, T, C, k }) {
+  const W_raw = I * Math.sqrt(T);
+  const E_raw = (C > 0 && k > 0) ? W_raw / (k * Math.sqrt(C)) : null;
+  return {
+    W: round(W_raw, 6),
+    E: E_raw === null ? null : round(E_raw, 6),
+  };
+}
+
+// ---- トースト表示 ----
+function showToast(msg, type = 'error') {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  if (type === 'success') {
+    toast.style.background = 'var(--good)';
+  } else if (type === 'warn') {
+    toast.style.background = '#f59e0b';
+  } else {
+    toast.style.background = 'var(--bad)';
+  }
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 50);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 600);
+  }, 2800);
+}
+
+// ---- 入力エラー演出（共通化） ----
+function addInputError(el) {
+  el.classList.remove('input-error');
+  void el.offsetWidth; // アニメーションリセット
+  el.classList.add('input-error');
+  setTimeout(() => el.classList.remove('input-error'), 3000);
+}
+
+// ---- 色・ラベル関数 ----
+function getJudgmentLabelAndColor(E) {
+  if (Math.abs(E - 1) < EPS)  return { label: 'バランス',   color: '#ffd60a' };
+  if (E > 3)                   return { label: 'かなりおすすめ', color: '#3b82f6' };
+  if (E > 1)                   return { label: 'いい感じ',    color: '#38b000' };
+  if (E >= 1 / 3 - EPS)       return { label: '様子見かな',    color: '#f59e0b' };
+  return                              { label: '高いかも', color: '#ef4444' };
+}
+
+function getBarColor(v) {
+  if (v < 1 / 3 - EPS)        return '#ef4444';
+  if (v < 1 - EPS)             return '#f59e0b';
+  if (Math.abs(v - 1) < EPS)  return '#ffd60a';
+  if (v <= 3)                  return '#38b000';
+  return                              '#3b82f6';
+}
+
+// ---- UI リセット共通処理 ----
+function clearResultUI() {
+  Wout.textContent        = '—';
+  Eout.textContent        = '—';
+  judgementEl.textContent = '—';
+  judgementEl.style.color = 'var(--text)';
+  Ebar.style.width        = '0%';
+  Ebar.style.background   = 'transparent';
+  EbarValue.textContent   = '—';
+  Wout.style.color        = 'var(--text)';
+  if (ElabelStrip)  ElabelStrip.style.display    = 'none';
+  if (resultBtnRow) resultBtnRow.style.visibility = 'hidden';
+  if (dailyQuote)   dailyQuote.style.visibility   = 'visible';
+}
+
+// ---- UI 更新 ----
+function updateResult(res) {
+  if (res.error) {
+    clearResultUI();
+    return;
+  }
+
+  Wout.textContent = Number.isFinite(res.W) ? res.W.toFixed(3) : '—';
+  Eout.textContent = (res.E !== null && Number.isFinite(res.E)) ? res.E.toFixed(3) : '—';
+
+  if (res.E === null) {
+    judgementEl.textContent = '—';
+    judgementEl.style.color = 'var(--muted)';
+    Ebar.style.width = '0%';
+    Ebar.style.background = 'transparent';
+    EbarValue.textContent = '—';
+    Wout.style.color = Number.isFinite(res.W) ? 'var(--good)' : 'var(--text)';
+    if (resultBtnRow) resultBtnRow.style.visibility = 'visible';
+    if (dailyQuote)   dailyQuote.style.visibility   = 'hidden';
+    lastResult = res;
+    return;
+  }
+
+  // --- E がある場合の処理 ---
+  const j = getJudgmentLabelAndColor(res.E);
+  judgementEl.textContent = j.label;
+  judgementEl.style.color = j.color;
+  Wout.style.color = '';
+
+  // 対数スケールで 0〜100% へマッピング（軸に整合）
+  const val    = Math.max(MIN_E, Math.min(res.E, MAX_E));
+  const logVal = Math.log10(val);
+  const logA   = Math.log10(1 / 7);
+  const logB   = Math.log10(1 / 3);
+  const logC   = Math.log10(1);
+  const logD   = Math.log10(3);
+  const logE   = Math.log10(7);
+  const posA = 0, posB = 29, posC = 50, posD = 71, posE = 100;
+
+  let percent;
+  if      (logVal <= logA) percent = posA;
+  else if (logVal <= logB) percent = posA + (posB - posA) * ((logVal - logA) / (logB - logA));
+  else if (logVal <= logC) percent = posB + (posC - posB) * ((logVal - logB) / (logC - logB));
+  else if (logVal <= logD) percent = posC + (posD - posC) * ((logVal - logC) / (logD - logC));
+  else if (logVal <= logE) percent = posD + (posE - posD) * ((logVal - logD) / (logE - logD));
+  else                     percent = posE;
+
+  Ebar.style.width      = percent + '%';
+  Ebar.style.background = getBarColor(res.E);
+  EbarValue.textContent = res.E.toFixed(2);
+
+  // ラベルストリップは常に非表示（ツールチップ内に記載のため）
+
+  lastResult = res;
+
+  // ボタン行を表示・格言を非表示
+  if (resultBtnRow) resultBtnRow.style.visibility = 'visible';
+  if (dailyQuote)   dailyQuote.style.visibility   = 'hidden';
+}
+
+function resetResult() {
+  clearResultUI();
+  lastResult = null;
+}
+
+// ---- 入力をリセット ----
+const resetInputBtn = qs('#resetInputBtn');
+if (resetInputBtn) {
+  resetInputBtn.onclick = () => {
+    itemNameInput.value  = '';
+    Iinput.value     = '';
+    Tinput.value     = '';
+    Tunit.value      = 'day';
+    Cinput.value     = '';
+    kinput.value     = '';
+    C0input.value    = '';
+    incomeInput.value = '';
+    resetResult();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+}
+
+// ---- 「結果をシェア」ボタン処理 ----
+const shareGaugeBtn = qs('#shareGaugeBtn');
+if (shareGaugeBtn) {
+  shareGaugeBtn.onclick = async () => {
+    if (!window.html2canvas) {
+      alert('画像生成ライブラリの読み込みに失敗しました。ページを再読み込みしてください。');
+      return;
+    }
+
+    const shareArea = qs('#resultShareArea');
+    if (!shareArea) {
+      alert('結果エリアが見つかりません。');
+      return;
+    }
+
+    const isLight = document.documentElement.classList.contains('light');
+    const bgColor = isLight ? '#ffffff' : '#071226';
+
+    // オフスクリーンにクローンを作成してキャプチャ（元のDOM操作なし）
+    const wrapper = document.createElement('div');
+    Object.assign(wrapper.style, {
+      position:   'fixed',
+      top:        '-9999px',
+      left:       '-9999px',
+      background: bgColor,
+      borderRadius: '12px',
+      padding:    '16px',
+      width:      shareArea.offsetWidth + 'px',
+      boxSizing:  'border-box',
+    });
+    wrapper.appendChild(shareArea.cloneNode(true));
+    document.body.appendChild(wrapper);
+
+    let canvas;
+    try {
+      canvas = await html2canvas(wrapper, { backgroundColor: bgColor, scale: 2, useCORS: true });
+    } catch (err) {
+      wrapper.remove();
+      alert('画像の生成に失敗しました。');
+      return;
+    }
+    wrapper.remove();
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        alert('画像の生成に失敗しました。');
+        return;
+      }
+
+      const file = new File([blob], 'Want_Result.png', { type: 'image/png' });
+      let canShare = false;
+      try { canShare = navigator.canShare && navigator.canShare({ files: [file] }); } catch (_) {}
+
+      if (canShare) {
+        try {
+          await navigator.share({ title: 'Want - 結果シェア', text: '私の Want - 結果シェア🔥', files: [file] });
+        } catch (err) {
+          if (err.name !== 'AbortError') console.warn('共有失敗:', err);
+        }
+      } else {
+        const link = document.createElement('a');
+        const blobUrl = URL.createObjectURL(blob);
+        link.href     = blobUrl;
+        link.download = 'Want_Result.png';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(blobUrl);
+        alert('このブラウザでは直接シェアできませんが、画像を保存しました。');
+      }
+    }, 'image/png');
+  };
+}
+
+// ---- 「結果」ボタン処理 ----
+calcBtn.onclick = () => {
+  let I      = toNum(Iinput.value);
+  const T    = convertTtoDays(toNum(Tinput.value), Tunit.value);
+  const C    = toNum(Cinput.value);
+  const k    = toNum(kinput.value);
+
+  if (I > 100) {
+    I = 100;
+    Iinput.value = 100;
+    showToast('I は 100 が上限です', 'warn');
+    Iinput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    Iinput.animate([
+      { boxShadow: '0 0 0px var(--accent)' },
+      { boxShadow: '0 0 10px var(--accent)' },
+      { boxShadow: '0 0 0px var(--accent)' },
+    ], { duration: 800 });
+  }
+
+  // 必須バリデーション（I, T, C, k）
+  const missingFields = [];
+  if (!(I > 0))                          missingFields.push(Iinput);
+  if (!(T > 0))                          missingFields.push(Tinput);
+  if (Cinput.value.trim() === '' || !Number.isFinite(C) || C < 0) missingFields.push(Cinput);
+  if (!Number.isFinite(k) || k <= 0)    missingFields.push(kinput);
+
+  if (missingFields.length > 0) {
+    resetResult();
+    showToast('I・T・C・k はすべて入力必須です');
+    missingFields.forEach(addInputError);
+    missingFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  updateResult(compute({ I, T, C, k }));
+  if (typeof _tryShowInstall === 'function') _tryShowInstall();
+};
+
+// ---- k 算出（心理的測定） ----
+calibrateBtn.onclick = () => {
+  const C0 = toNum(C0input.value);
+  if (!C0 || C0 <= 0) {
+    showToast('有効な金額を入力してください');
+    addInputError(C0input);
+    C0input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  const kVal = 100 / Math.sqrt(C0);
+  kinput.value = round(kVal, 6);
+  showToast(`k=${round(kVal, 6)} を算出しました`, 'success');
+};
+
+// ---- k 算出（予算的測定） ----
+incomeBtn.onclick = () => {
+  const income = toNum(incomeInput.value);
+  if (!income || income <= 0) {
+    showToast('有効な金額を入力してください');
+    addInputError(incomeInput);
+    incomeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  const C0   = income / 3;
+  const kVal = 100 / Math.sqrt(C0);
+  kinput.value = round(kVal, 6);
+  showToast(`k=${round(kVal, 6)} を算出しました`, 'success');
+};
+
+// ---- 履歴保存 ----
+saveBtn.onclick = () => {
+  if (!lastResult) { showToast('まず「結果を見る」を押してください', 'warn'); return; }
+  const entry = {
+    id:    genId(),
+    ts:    nowIso(),
+    I:     toNum(Iinput.value),
+    T:     convertTtoDays(toNum(Tinput.value), Tunit.value),
+    Tunit: Tunit.value,
+    C:     toNum(Cinput.value),
+    k:     toNum(kinput.value),
+    W:     lastResult.W,
+    E:     lastResult.E,
+    memo:  itemNameInput.value.trim(),
+  };
+  const arr = loadHistory();
+  arr.unshift(entry);
+  saveHistory(arr);
+  renderHistory();
+  showToast('履歴を保存しました', 'success');
+};
+
+// ---- 全件削除 ----
+clearAllBtn.onclick = () => {
+  if (confirm('履歴を全て削除しますか？')) {
+    removePref(STORAGE_KEY);
+    renderHistory();
+  }
+};
+
+// ---- 履歴描画（イベント委譲） ----
+function renderHistory() {
+  const mode = loadPref(SORT_MODE_KEY) || 'time';
+  const arr  = loadHistory();
+
+  // ストレージは挿入順のまま保持し、表示時のみメモリ上でソート
+  const sorted = arr.slice();
+  if (mode === 'E') {
+    sorted.sort((a, b) => ((b.E ?? 0) - (a.E ?? 0)));
+  } else {
+    sorted.sort((a, b) => {
+      const ta = new Date(a.ts).getTime();
+      const tb = new Date(b.ts).getTime();
+      if (isNaN(ta) && isNaN(tb)) return 0;
+      if (isNaN(ta)) return 1;
+      if (isNaN(tb)) return -1;
+      return tb - ta;
+    });
+  }
+
+  historyList.innerHTML = '';
+  if (!sorted.length) {
+    historyList.innerHTML = '<div style="color:var(--muted)">履歴はありません</div>';
+    return;
+  }
+  sorted.forEach((item) => {
+    const el   = document.createElement('div'); el.className = 'hist-item';
+    const top  = document.createElement('div'); top.className = 'hist-top';
+    const meta = document.createElement('div'); meta.className = 'hist-meta';
+    meta.textContent = new Date(item.ts).toLocaleString();
+
+    const act     = document.createElement('div');
+    const loadBtn = document.createElement('button');
+    loadBtn.className       = 'btn-ghost btn-small';
+    loadBtn.textContent     = '読み込み';
+    loadBtn.dataset.action  = 'load';
+    loadBtn.dataset.id      = item.id;
+    const delBtn = document.createElement('button');
+    delBtn.className       = 'btn-danger btn-small';
+    delBtn.textContent     = '削除';
+    delBtn.dataset.action  = 'del';
+    delBtn.dataset.id      = item.id;
+
+    act.appendChild(loadBtn);
+    act.appendChild(delBtn);
+    top.appendChild(meta);
+    top.appendChild(act);
+
+    const memoEl = document.createElement('div');
+    memoEl.className   = 'hist-memo';
+    memoEl.textContent = item.memo || '';
+
+    el.appendChild(top);
+    el.appendChild(memoEl);
+    historyList.appendChild(el);
+  });
+}
+
+// イベント委譲: 履歴の読み込み・削除
+historyList.addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button');
+  if (!btn) return;
+  const { action, id } = btn.dataset;
+
+  if (action === 'load') {
+    const arr  = loadHistory();
+    const item = arr.find((x) => x.id === id);
+    if (!item) return;
+
+    Iinput.value = item.I;
+    itemNameInput.value = item.memo || '';
+    Cinput.value = item.C;
+    kinput.value = item.k;
+
+    const unit     = item.Tunit || 'day';
+    const Tdays    = item.T;
+    let   displayT = Tdays;
+    if      (unit === 'week')  displayT = Tdays / 7;
+    else if (unit === 'month') displayT = Tdays / 30;
+    else if (unit === 'year')  displayT = Tdays / 365;
+    Tinput.value = round(displayT, 2);
+    Tunit.value  = unit;
+
+    updateResult(compute({ I: item.I, T: item.T, C: item.C, k: item.k }));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } else if (action === 'del') {
+    if (!confirm('削除しますか？')) return;
+    const arr = loadHistory().filter((x) => x.id !== id);
+    saveHistory(arr);
+    renderHistory();
+  }
+});
+
+// ---- ソート ----
+function setSortMode(mode) {
+  savePref(SORT_MODE_KEY, mode);
+  renderHistory();
+  if (mode === 'E') {
+    sortEBtn.classList.add('sort-active');
+    sortTimeBtn.classList.remove('sort-active');
+  } else {
+    sortTimeBtn.classList.add('sort-active');
+    sortEBtn.classList.remove('sort-active');
+  }
+}
+
+sortEBtn.onclick    = () => setSortMode('E');
+sortTimeBtn.onclick = () => setSortMode('time');
+
+// 初期ソート
+(function initSortHistory() {
+  const savedSort   = loadPref(SORT_MODE_KEY);
+  const initialMode = savedSort === 'E' ? 'E' : 'time';
+  setSortMode(initialMode);
+})();
+
+// ---- テーマ ----
+function applyTheme(mode) {
+  document.documentElement.classList.toggle('light', mode === 'light');
+  themeToggle.textContent = mode === 'light' ? '🌙' : '☀️';
+  savePref(THEME_KEY, mode);
+}
+
+themeToggle.onclick = () => {
+  const current = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+  if (lastResult) updateResult(lastResult);
+};
+
+(function initTheme() {
+  const saved = loadPref(THEME_KEY);
+  if (saved) {
+    applyTheme(saved);
+  } else {
+    const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    applyTheme(prefersLight ? 'light' : 'dark');
+  }
+})();
+
+// ---- PWA Service Worker 登録 ----
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => console.log('SW登録:', reg.scope))
+      .catch((err) => console.warn('SW失敗:', err));
+  });
+
+  // ---- 更新通知バナー ----
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data?.type === 'SW_UPDATED') {
+      const banner = document.getElementById('updateBanner');
+      if (banner) {
+        banner.style.display = 'flex';
+        requestAnimationFrame(() => {
+          banner.style.opacity = '1';
+          banner.style.transform = 'translateX(-50%) translateY(0)';
+        });
+      }
+    }
+  });
+}
+
+// ---- PWA インストール促進（計算後トリガー＋7日サプレッション） ----
+(function pwaInstall() {
+  const SUPPRESS_KEY   = 'installPromptSuppressedAt';
+  const SUPPRESS_DAYS  = 7;
+
+  // 却下タイムスタンプを保存
+  function suppressInstall() {
+    savePref(SUPPRESS_KEY, Date.now().toString());
+  }
+
+  // サプレッション中かどうか判定
+  function isInstallSuppressed() {
+    const ts = loadPref(SUPPRESS_KEY);
+    if (!ts) return false;
+    return Date.now() - Number(ts) < SUPPRESS_DAYS * 24 * 60 * 60 * 1000;
+  }
+
+  let deferredPrompt = null;
+  let installShown = false;
+  const installBtn = qs('#installBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // ここではボタンを出さない。計算後に tryShowInstall() で表示する
+  });
+
+  function tryShowInstall() {
+    if (installShown) return;
+    // 7日以内に却下済みならスキップ
+    if (isInstallSuppressed()) return;
+    installShown = true;
+
+    // Android Chrome: インストールボタンをそっと表示
+    if (deferredPrompt && installBtn) {
+      installBtn.style.display = 'inline-block';
+    }
+
+    // iOS Safari 向け案内（スタンドアロンでない場合のみ）
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone = window.navigator.standalone === true;
+    if (isIos && !isStandalone) {
+      const overlay = document.createElement('div');
+      Object.assign(overlay.style, {
+        position: 'fixed', inset: '0', background: 'rgba(0,0,0,0.55)',
+        zIndex: '99998', display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        padding: '0 0 32px',
+      });
+      const box = document.createElement('div');
+      Object.assign(box.style, {
+        background: 'var(--card)', border: '1.5px solid var(--accent)',
+        borderRadius: '16px', padding: '20px 20px 16px', maxWidth: '360px', width: '92%',
+        color: 'var(--text)', fontSize: '0.9rem', lineHeight: '1.7',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      });
+      box.innerHTML = `
+        <div style="font-weight:700;font-size:1rem;margin-bottom:8px;">📲 ホーム画面に追加できます</div>
+        <div style="color:var(--muted);margin-bottom:16px;">Safari の <b>共有ボタン（□↑）</b> →「ホーム画面に追加」でインストールできます。</div>
+        <div style="display:flex;gap:10px;">
+          <button id="iosInstallDoneBtn" style="flex:1;padding:10px;border-radius:10px;border:none;
+            background:var(--accent);color:#042029;font-weight:700;cursor:pointer;font-size:0.9rem;">
+            追加しました ✓
+          </button>
+          <button id="iosInstallSkipBtn" style="flex:1;padding:10px;border-radius:10px;
+            background:transparent;border:1px solid rgba(159,180,199,0.4);
+            color:var(--text);font-weight:600;cursor:pointer;font-size:0.9rem;">
+            あとで
+          </button>
+        </div>
+      `;
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+
+      // 「追加しました」→ GA4計測
+      box.querySelector('#iosInstallDoneBtn').onclick = () => {
+        if (typeof gtag === 'function') {
+          gtag('event', 'pwa_installed_ios_self_report', {
+            event_category: 'PWA',
+            event_label: 'iOS Install Self-Reported',
+          });
+        }
+        overlay.remove();
+        showToast('インストールありがとうございます！', 'success');
+      };
+      // 「あとで」→ 7日間サプレッション
+      box.querySelector('#iosInstallSkipBtn').onclick = () => {
+        suppressInstall();
+        overlay.remove();
+      };
+    }
+  }
+
+  // calcBtn.onclick から呼び出せるようにグローバル変数へ登録
+  _tryShowInstall = tryShowInstall;
+
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+      // 却下された場合は7日間サプレッション
+      if (outcome === 'accepted') {
+        showToast('インストール開始！', 'success');
+      } else {
+        suppressInstall();
+      }
+    });
+  }
+
+  window.addEventListener('appinstalled', () => {
+    if (installBtn) installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+})();
+
+// ==== ステップ式チュートリアル ====
+(function stepTutorial() {
+  const tutBtn = qs('#tutorialBtn');
+  if (tutBtn) {
+    tutBtn.onclick = () => showTutorialDialog();
+  }
+
+  // 初回起動時のみ自動表示（ウェルカムポップアップ）
+  const WELCOME_KEY = 'welcomeShown';
+  if (!loadPref(WELCOME_KEY)) {
+    showWelcomePopup();
+  }
+
+  function showWelcomePopup() {
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, {
+      position: 'fixed', inset: '0',
+      display: 'flex', justifyContent: 'center', alignItems: 'center',
+      background: 'rgba(0,0,0,0.55)', zIndex: '99999',
+    });
+
+    overlay.innerHTML = `
+      <div style="
+        background:var(--card); color:var(--text);
+        padding:28px 24px; border-radius:16px;
+        max-width:300px; width:88%; text-align:center;
+        border:1px solid var(--accent);
+        box-shadow:0 8px 32px rgba(0,0,0,0.5);
+        animation:fadeInUp 0.3s ease;
+      ">
+        <div style="font-size:2rem;margin-bottom:10px;">🎉</div>
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:10px;">Welcome to Want!</div>
+        <div style="
+          background:rgba(125,211,252,0.1);
+          border:1px solid var(--accent);
+          border-radius:10px;
+          padding:12px 14px;
+          margin-bottom:16px;
+          font-size:0.95rem;
+          line-height:1.7;
+        ">
+          チュートリアルはこちら →&nbsp;<span style="
+            display:inline-block;
+            background:var(--accent);
+            color:#042029;
+            font-weight:700;
+            padding:1px 8px;
+            border-radius:6px;
+            font-size:0.88rem;
+          ">🔰入門</span>
+          <br>
+          <span style="font-size:0.88rem;color:var(--muted);">いつでも起動できます！</span>
+        </div>
+        <button id="welcomeOkBtn" style="
+          width:100%; padding:10px;
+          background:var(--accent); color:#042029;
+          border:none; border-radius:10px;
+          font-weight:700; font-size:1rem;
+          cursor:pointer;
+        ">OK</button>
+      </div>
+    `;
+
+    // アニメーション
+    const style = document.createElement('style');
+    style.textContent = `@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`;
+    document.head.appendChild(style);
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#welcomeOkBtn').onclick = () => {
+      overlay.style.transition = 'opacity 0.2s';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 200);
+      savePref(WELCOME_KEY, 'true');
+    };
+  }
+
+  // ---- チュートリアル開始ダイアログ（共通化） ----
+  function showTutorialDialog() {
+    const dialog = document.createElement('div');
+    Object.assign(dialog.style, {
+      position: 'fixed', inset: '0', display: 'flex',
+      flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+      background: 'rgba(0,0,0,0.6)', zIndex: '99999',
+    });
+    dialog.innerHTML = `
+      <div style="background:var(--card);color:var(--text);padding:24px;border-radius:12px;max-width:300px;text-align:center;border:1px solid var(--accent);">
+        <div style="margin-bottom:12px;font-weight:700;">チュートリアルを始めますか？</div>
+        <div style="margin-bottom:12px;">全10ステップ・約1分で完了します。</div>
+        <div style="margin-bottom:12px;">実際に入力可能です✅️</div>
+        <div style="height:8px;"></div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <button id="tutYes" style="padding:8px 14px;background:var(--accent);color:#042029;border:none;border-radius:8px;font-weight:bold;">はい</button>
+          <button id="tutSkip" style="padding:8px 14px;background:transparent;border:1px solid var(--accent);color:var(--text);border-radius:8px;">スキップ</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(dialog);
+
+    dialog.querySelector('#tutSkip').onclick = () => {
+      savePref(TUTORIAL_KEY, 'true');
+      dialog.remove();
+    };
+    dialog.querySelector('#tutYes').onclick = () => {
+      dialog.remove();
+      startTutorial();
+    };
+  }
+
+  function startTutorial() {
+    // ステップインデックス（i）を10段階にマッピング
+    // index 0〜6: ①〜⑦、index 7〜8: 心理パス、index 9〜10: 予算パス、index 11: ⑩最終
+    function getDisplayStepIndex(i) {
+      if (i <= 6)                  return i + 1;  // ①〜⑦ → 1〜7
+      if (i === 7 || i === 9)      return 8;      // 心理 or 予算パス（入力） → 8
+      if (i === 8 || i === 10)     return 9;      // 心理 or 予算パス（算出） → 9
+      return 10;                                   // 最終ステップ → 10
+    }
+    const TOTAL_STEPS = 10;
+
+    const steps = [
+      { el: null,            msg: '① 本ツールを一言でいうと、<br>欲しい気持ちの蓄積と、費用の負担感の<br>バランスを見える化する<br><br>「人間らしい計算器」です。' },
+      { el: '#itemName',     msg: '② まず、欲しいものを入力してみよう！<br><br>（任意ですが入力がおすすめ📝）' },
+      { el: '#I',            msg: '③ 欲しい気持ちを1―100点で入力。<br>直感でOKです。' },
+      { el: '#T',            msg: '④ いつから欲しいと思ってる？<br>日、週、月、年&emsp;選択可。' },
+      { el: '#C',            msg: '⑤ 買うならいくらかかる？' },
+      { el: '#k',            msg: '⑥ 「k」はあなたの金銭感覚。<br><br>今はとばしてOKです！' },
+      { el: null,            type: 'branch', msg: '⑦ k算出の方法を選んでください。<br><br>どちらか一方でOKです！' },
+      // 心理パス (index 7, 8)
+      { el: '#C0',           onEnter: () => switchKTab(1), msg: '⑧ 心理的な測定<br><br>あなたは今、ショッピングモールで、<br>ある商品に一目惚れしました。<br>即決で「買う！」と思える許容額は？' },
+      { el: '#calibrateBtn', onEnter: () => switchKTab(1), msg: '⑨ 入力後に「算出」を押してみよう。' },
+      // 予算パス (index 9, 10)
+      { el: '#income',       onEnter: () => switchKTab(2), msg: '⑧ 予算からの測定<br><br>あなたの月の自由に使えるお金は？<br><br>※ いわゆる「お小遣い」のこと' },
+      { el: '#incomeBtn',    onEnter: () => switchKTab(2), msg: '⑨ 入力後に「算出」を押してみよう。' },
+      // 共通ゴール (index 11)
+      { el: '#calcBtn',      msg: '⑩ 「結果」を押して判定を確認！<br>お疲れさまでした！' },
+    ];
+
+    let index = 0;
+    let prevBranchEnd = 8; // 最終ステップから「戻る」時の戻り先（心理:8 / 予算:10）
+
+    const mask = document.createElement('div');
+    mask.className = 'tutorial-mask';
+    Object.assign(mask.style, {
+      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+      background: 'rgba(0,0,0,0.3)', zIndex: 99998, pointerEvents: 'none',
+    });
+    document.body.appendChild(mask);
+
+    const bubble = document.createElement('div');
+    bubble.className = 'tutorial-bubble';
+    Object.assign(bubble.style, {
+      position: 'fixed', width: '300px', padding: '16px',
+      background: 'var(--card)', color: 'var(--text)',
+      borderRadius: '12px', border: '1px solid var(--accent)',
+      zIndex: 99999, textAlign: 'center',
+      transition: 'top 0.2s ease,left 0.2s ease',
+    });
+    document.body.appendChild(bubble);
+
+    function updateBubblePosition(el) {
+      if (!el) return;
+      const rect        = el.getBoundingClientRect();
+      const bubbleWidth = bubble.offsetWidth || 300;
+      const centerX     = rect.left + rect.width / 2;
+      const top         = rect.bottom + 12;
+      const left        = Math.min(Math.max(centerX, bubbleWidth / 2 + 8), window.innerWidth - bubbleWidth / 2 - 8);
+      bubble.style.top       = `${Math.min(top, window.innerHeight - 120)}px`;
+      bubble.style.left      = `${left}px`;
+      bubble.style.transform = 'translateX(-50%)';
+    }
+
+    function removeCurrentHighlight() {
+      const cur = qs(steps[index]?.el);
+      if (cur) cur.classList.remove('tutorial-highlight');
+    }
+
+    function buildHeader(displayStep, progressPercent) {
+      return `
+        <div style="position:relative;margin-bottom:8px;">
+          <button id="closeTutorial" style="position:absolute;top:-4px;right:-4px;background:transparent;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1;padding:2px 4px;">✕</button>
+          <div style="font-weight:bold;">ステップ ${displayStep} / ${TOTAL_STEPS}</div>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:8px;">
+          <div style="width:${progressPercent}%;height:100%;background:var(--accent);transition:width 0.3s;"></div>
+        </div>
+      `;
+    }
+
+    function showStep(i) {
+      const step = steps[i];
+      if (!step) { endTutorial(); return; }
+
+      const el = step.el ? qs(step.el) : null;
+      if (step.el && !el) { nextStep(); return; }
+
+      if (step.onEnter) step.onEnter();
+
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('tutorial-highlight');
+        updateBubblePosition(el);
+      } else {
+        bubble.style.top       = '50%';
+        bubble.style.left      = '50%';
+        bubble.style.transform = 'translate(-50%, -50%)';
+      }
+
+      const displayStep     = getDisplayStepIndex(i);
+      const progressPercent = (displayStep / TOTAL_STEPS) * 100;
+      const isFirst         = i === 0;
+      const isLast          = i === steps.length - 1;
+      const header          = buildHeader(displayStep, progressPercent);
+      const prevStyle       = `flex:1;padding:6px 12px;border-radius:8px;border:1px solid rgba(159,180,199,0.38);background:transparent;color:var(--text);cursor:pointer;`;
+      const nextStyle       = `flex:1;padding:6px 12px;border-radius:8px;border:none;background:var(--accent);color:#042029;font-weight:bold;cursor:pointer;`;
+
+      if (step.type === 'branch') {
+        // 分岐ステップ：「次へ」の代わりに2択ボタン
+        bubble.innerHTML = `
+          ${header}
+          <div>${step.msg}</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+            <button id="branchPsych" style="padding:10px;background:rgba(125,211,252,0.13);border:1.5px solid var(--accent);color:var(--accent);border-radius:8px;font-weight:700;cursor:pointer;">💭 心理的に測定</button>
+            <button id="branchBudget" style="padding:10px;background:rgba(125,211,252,0.13);border:1.5px solid var(--accent);color:var(--accent);border-radius:8px;font-weight:700;cursor:pointer;">💰 予算から測定</button>
+          </div>
+          <div style="margin-top:10px;">
+            <button id="prevStep" style="${prevStyle}${isFirst ? 'opacity:0.4;pointer-events:none;' : ''}">◀ 戻る</button>
+          </div>
+        `;
+        bubble.querySelector('#branchPsych').onclick = () => {
+          removeCurrentHighlight();
+          index = 7; // 心理パス先頭へ
+          showStep(index);
+        };
+        bubble.querySelector('#branchBudget').onclick = () => {
+          removeCurrentHighlight();
+          index = 9; // 予算パス先頭へ
+          showStep(index);
+        };
+        bubble.querySelector('#prevStep').onclick = () => prevStep();
+      } else {
+        // 通常ステップ
+        bubble.innerHTML = `
+          ${header}
+          <div>${step.msg}</div>
+          <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px;">
+            <button id="prevStep" style="${prevStyle}${isFirst ? 'opacity:0.4;pointer-events:none;' : ''}">◀ 戻る</button>
+            <button id="nextStep" style="${nextStyle}">${isLast ? '完了' : '次へ ▶'}</button>
+          </div>
+        `;
+
+        // スクロール・リサイズ追跡
+        const reposition = () => { if (el) updateBubblePosition(el); };
+        window.addEventListener('scroll', reposition);
+        window.addEventListener('resize', reposition);
+
+        bubble.querySelector('#nextStep').onclick = () => {
+          window.removeEventListener('scroll', reposition);
+          window.removeEventListener('resize', reposition);
+          nextStep();
+        };
+        bubble.querySelector('#prevStep').onclick = () => {
+          window.removeEventListener('scroll', reposition);
+          window.removeEventListener('resize', reposition);
+          prevStep();
+        };
+      }
+
+      bubble.querySelector('#closeTutorial').onclick = () => endTutorial();
+    }
+
+    function nextStep() {
+      removeCurrentHighlight();
+      // 心理パス末尾(8)・予算パス末尾(10) → 最終ステップ(11)へスキップ
+      if (index === 8 || index === 10) {
+        prevBranchEnd = index;
+        index = 11;
+      } else {
+        index++;
+      }
+      showStep(index);
+    }
+
+    function prevStep() {
+      if (index <= 0) return;
+      removeCurrentHighlight();
+      // 各パス先頭から「戻る」→ 分岐ステップ(6)へ
+      if (index === 7 || index === 9) {
+        index = 6;
+      } else if (index === 11) {
+        // 最終ステップから「戻る」→ 通ってきたパスの末尾へ
+        index = prevBranchEnd;
+      } else {
+        index--;
+      }
+      showStep(index);
+    }
+
+    function endTutorial() {
+      bubble.remove();
+      mask.remove();
+      removeCurrentHighlight();
+      savePref(TUTORIAL_KEY, 'true');
+    }
+
+    showStep(index);
+  }
+})();
+</script>
+
+<!-- 更新通知バナー -->
+<div id="updateBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(6px);
+  background:var(--card); border:1.5px solid var(--accent); color:var(--text); padding:10px 16px; border-radius:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.45); z-index:99999; font-size:0.9rem; font-weight:600;
+  align-items:center; gap:12px; white-space:nowrap; opacity:0;
+  transition: opacity 0.35s ease, transform 0.35s ease;">
+  <span>新しいバージョンがあります</span>
+  <button onclick="sessionStorage.setItem('just_updated','1'); location.reload()"
+    style="background:var(--accent); color:#042029; border:none; padding:6px 14px;
+    border-radius:8px; font-size:0.88rem; font-weight:700; cursor:pointer; line-height:1.4;">
+    今すぐ更新
+  </button>
+</div>
+<script>
+  // 更新直後にトップへスクロール＋トーストを表示
+  if (sessionStorage.getItem('just_updated') === '1') {
+    sessionStorage.removeItem('just_updated');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const t = document.createElement('div');
+    t.textContent = '✓ 更新しました';
+    Object.assign(t.style, {
+      position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%) translateY(6px)',
+      background:'var(--card)', border:'1.5px solid var(--accent)',
+      color:'var(--text)', fontWeight:'600',
+      padding:'10px 20px', borderRadius:'12px', fontSize:'0.9rem',
+      boxShadow:'0 4px 16px rgba(0,0,0,0.4)', zIndex:'99999',
+      opacity:'0', transition:'opacity 0.35s, transform 0.35s', pointerEvents:'none',
+    });
+    document.body.appendChild(t);
+    requestAnimationFrame(() => {
+      t.style.opacity = '1';
+      t.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateX(-50%) translateY(10px)';
+        setTimeout(() => t.remove(), 400);
+      }, 2200);
+    });
+  }
+</script>
+
+</body>
+</html>
